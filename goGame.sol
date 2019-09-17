@@ -1,5 +1,18 @@
 pragma solidity ^0.5.0;
 
+
+contract BadukGame {
+    event createGoGameEvent(address creater,GoGame gogame ,uint value);
+    function createGoGame(uint32 n) external payable {
+        uint256 eth = msg.value;
+        address owner = msg.sender;
+        GoGame gogame = (new GoGame).value(eth)(n,owner);
+        emit createGoGameEvent(owner,gogame,n);
+    }
+}
+
+
+
 contract GoGame {
    uint32 public N ;//棋盘格子数
     int public score;
@@ -52,8 +65,8 @@ contract GoGame {
    event rejectApplyforGameOverEvent(address  addr,int color);
    event forcerGameOverEvent(address  addr,int color);
    
-     constructor (uint32 n) payable public  {
-        owner = msg.sender;
+     constructor (uint32 n,address creater) payable public  {
+        owner = creater;
         uint timestamp = block.timestamp;
         if(timestamp%2==1){
             invert = -1;
