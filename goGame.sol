@@ -38,6 +38,20 @@ contract GoGame {
    mapping(int => uint) public  timer;
    mapping(int => address) public  colors;
    
+   event challengeEvent(address addr,uint value);
+   event challengeConfirmEvent(address addr,address challenger);
+   event challengeRejectEvent(address addr,address challenger);
+   event giveUpChallengeEvent(address addr,uint value);
+   event getBackChallengeEvent(address addr,uint value);
+   event destructEvent(address addr,uint value);
+   event resignEvent(address addr,int color);
+   event playEvent(address  addr,int color ,uint32 x); 
+   event passMoveEvent(address  addr,int color);
+   event applyforGameOverEvent(address  addr,int color);
+   event confirmApplyforGameOverEvent(address  addr,int color);
+   event rejectApplyforGameOverEvent(address  addr,int color);
+   event forcerGameOverEvent(address  addr,int color);
+   
      constructor (uint32 n) payable public  {
         owner = msg.sender;
         uint timestamp = block.timestamp;
@@ -57,13 +71,7 @@ contract GoGame {
 
      }
      
-          function getBoard() view external returns (int[] memory) {
-         return board;
-     }
      
-
-
-
      
      
      function challenge() payable external {
@@ -76,6 +84,7 @@ contract GoGame {
 	    challenger = player;
 	    challengerValue[player] += msg.value;
 	    challengeStatus = 1;
+	    emit challengeEvent(player,msg.value);
     }
     
     function challengeConfirm()  external {
@@ -85,6 +94,7 @@ contract GoGame {
 	    start = true;
 	    currentBlockNum = block.number;
 	    challengeStatus = 2;
+	    emit challengeConfirmEvent(addr,challenger);
     }
     
     function challengeReject()  external {
@@ -93,6 +103,7 @@ contract GoGame {
 	    require(start == false);
 	    require(challengeStatus == 1);
 	    challengeStatus = 0;
+	    emit challengeRejectEvent(addr,challenger);
 	    delete challenger;
 	    delete colors[players[challenger]];
     }
@@ -112,7 +123,7 @@ contract GoGame {
 	        uint balanceAfter = address(this).balance;
 	        require(balance>= challengerValue[addr] + balanceAfter);
        }
-	 
+	    emit giveUpChallengeEvent(addr,challengerValue[addr]);
 	   delete challengerValue[addr];
 	   delete colors[players[challenger]];
 	   delete  players[challenger];
@@ -128,7 +139,7 @@ contract GoGame {
 	        uint balanceAfter = address(this).balance;
 	        require(balance>= challengerValue[addr] + balanceAfter);
        }
-	   
+	   emit getBackChallengeEvent(addr,challengerValue[addr]);
 	   delete challengerValue[addr];
 	   delete colors[players[challenger]];
 	   delete  players[challenger];
@@ -137,11 +148,12 @@ contract GoGame {
     function destruct()  external gamendModifier{
          address addr = msg.sender;
        require(addr == winer);
+       emit destructEvent(addr,address(this).balance);
        selfdestruct( msg.sender);
     }
     
     function resign() external operateModifier gameingModifier{ 
-       
+       emit resignEvent(msg.sender,toPlay);
         gameOver = true;
         winer = colors[toPlay*-1];
          toPlay *=-1;
@@ -149,6 +161,7 @@ contract GoGame {
     
     function play(uint32 x) external operateModifier gameingModifier timeOutModifer{ 
        require(!applyforGameOverStatus);
+       emit playEvent(msg.sender,toPlay,x);
        step +=1;
         
         //...
@@ -159,6 +172,7 @@ contract GoGame {
     
     function passMove() external operateModifier gameingModifier timeOutModifer{
         require(!applyforGameOverStatus);
+        emit passMoveEvent(msg.sender,toPlay);
         step +=1;
         
         //...
@@ -178,6 +192,7 @@ contract GoGame {
     
    function applyforGameOver() external operateModifier gameingModifier timeOutModifer{
        require(!applyforGameOverStatus);
+       emit applyforGameOverEvent(msg.sender,toPlay);
         updateScore();
          toPlay *=-1;
          applyforGameOverStatus = true;
@@ -185,6 +200,7 @@ contract GoGame {
     
     function confirmApplyforGameOver() external operateModifier gameingModifier timeOutModifer{
         require(applyforGameOverStatus);
+        emit confirmApplyforGameOverEvent(msg.sender,toPlay);
         gameOver = true;
         toPlay *=-1;
         updateWiner ();
@@ -192,6 +208,7 @@ contract GoGame {
     
     function rejectApplyforGameOver() external operateModifier gameingModifier timeOutModifer{
         require(applyforGameOverStatus);
+        emit rejectApplyforGameOverEvent(msg.sender,toPlay);
         applyforGameOverStatus=false;
          toPlay *=-1;
     }
@@ -199,7 +216,7 @@ contract GoGame {
     function forcerGameOver() external operateModifier  gameingModifier timeOutModifer{
              updateScore();
             require(shoudGameOverStatus);
-           
+           emit forcerGameOverEvent(msg.sender,toPlay);
             gameOver = true; 
             updateWiner ();
     }
