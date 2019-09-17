@@ -2,12 +2,12 @@ pragma solidity ^0.5.0;
 
 
 contract BadukGame {
-    event createGoGameEvent(address creater,GoGame gogame ,uint value);
+    event createGoGameEvent(address creater,GoGame gogame ,uint value,uint n);
     function createGoGame(uint32 n) external payable {
         uint256 eth = msg.value;
         address owner = msg.sender;
         GoGame gogame = (new GoGame).value(eth)(n,owner);
-        emit createGoGameEvent(owner,gogame,n);
+        emit createGoGameEvent(owner,gogame,eth,n);
     }
 }
 
