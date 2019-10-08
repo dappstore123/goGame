@@ -11,7 +11,7 @@ import (
 )
 
 func main() {
-	c:="/usr/local/Cellar/leela-zero/0.17/bin/leelaz -g --cpu-only -t 1  --noponder --playouts 100  -w /Users/laozhang/.local/share/leela-zero/weights.txt"
+	c:="/usr/local/Cellar/leela-zero/0.17/bin/leelaz -g --cpu-only -t 1  --noponder --playouts 100  -w /Users/.local/share/leela-zero/weights.txt"
 	conn ,err:= NewConnection("sh","-c",c)
 	if err != nil {
 		log.Print(err)
